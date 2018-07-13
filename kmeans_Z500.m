@@ -50,7 +50,7 @@ unnecssary
 %}
 
 tic;
-
+%% load Z500 and its anomalies
 for m=1:ensembles
     load (['/work/03959/achattop/stampede2/tensorflow/Z99daily_NA_M' num2str(cnt_ens) '.mat'])
     Zave=squeeze(mean(Z99NApattern(:,:,:,18:109),2));
@@ -62,6 +62,8 @@ for m=1:ensembles
     cnt_ens=cnt_ens+1;
 
 end
+
+%% generate samples of vectorized Z500
 count=1;
 for m=1:ensembles
 for i=61:86
@@ -71,30 +73,21 @@ count=count+1;
     end
 end
 end
-%U2=reshape(U,size(U,1)*size(U,2),size(U,3)*size(U,4));
-%V2=reshape(V,size(V,1)*size(V,2),size(V,3)*size(V,4));
-
-%X=[U2;V2];
-
 %Do PCA
 [EOFs,PCval]=EOFanalysis(X);
 
-
-% figure
-% plot(silval(:,1), silval(:,2),'r*-.')   %plots avg silhouette value plot
 
 %if we want to manually select clusters from plot
 if manual == 1
    % reply = input('How many clusters do you want?')   %enter number into command window and then hit 'Enter'
     %reply = input('How many clusters do you want?')   %enter number into command window and then hit 'Enter'
     %nC = reply;
-   nC=10; 
-   
+   nC=10; %%Change this to the number of classes you want   
     
     %reply = input('How many EOFs do you want?')   %enter number into command window and then hit 'Enter'
     %reply = input('How many EOFs do you want?')   %enter number into command window and then hit 'Enter'
     %nEOF = reply;
-    nEOF = 22;
+    nEOF = 22; %% change this to the number of EOFs you want to retain
     
 %if we want to just select highest avg silhouette value between 4-20 clusters
 elseif manual == 0
@@ -160,10 +153,11 @@ for n=1:nC
     
 end
 
+%% save the cluster center images
 saveas(h,['clusterswithC=' num2str(nC) 'ensemblesize' num2str(ensembles) '.png'])
 close(h)
 hold off
-
+%% plot the 1st 6 EOFs
 h=figure(3)
 for i=1:6
     k=i-1;
@@ -180,6 +174,8 @@ saveas(h,['EOFS' num2str(nC)  '.png'])
 close(h)
 
 toc
+
+%% save the clustered data
 save(['Clustereddatawithensemble' num2str(ensembles) 'withcluster' num2str(nC) '.mat'],'X','idx','Count','-v7.3')
 
 % end
