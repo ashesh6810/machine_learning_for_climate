@@ -1,6 +1,6 @@
 clear all;close all;clc;
 nC=4;
-samples=4000;
+samples=4000; %% number of samples per class
 ensembles=40;
 cnt_ens=1;
 load ('/scratch/03959/achattop/clustering/grid.mat');
@@ -12,6 +12,7 @@ lon_east_index=253;
 lat1=lat(97:end);
 [qx,qy]=meshgrid(lon(lon_west_index:lon_east_index),lat1(lat_south_index:end));
 
+%%load the Z500 patterns
 for m=1:ensembles
     load (['/work/03959/achattop/stampede2/tensorflow/Z99daily_NA_M' num2str(cnt_ens) '.mat'])
    M{m}=Z99NApattern(:,:,:,18:109);
@@ -19,6 +20,7 @@ for m=1:ensembles
 
 end
 
+%% generate samples of vectrozied Z500
 count=1;
 for m=1:ensembles
 for i=61:86
@@ -29,9 +31,10 @@ count=count+1;
 end
 end
 
-
+%% declare array for labels-one hot encoded
 LABELS=zeros(nC*samples,nC);
 
+%% generate clusters of Z500 corresponding to Z500 anomalies
 for j=1:nC
     count=1;
  for i=1:length(idx)
@@ -43,6 +46,7 @@ for j=1:nC
  end
 end
 
+%% generate images for training,remove white spaces, downsample to 28x28
 count=1;
 for j=1:nC
     for i=1:size(cluster{j},2)
@@ -63,6 +67,7 @@ for j=1:nC
     end
 end
 
+%% keep 75% for training and 25% for testing
 for i=1:nC
    
   X_train{i}=im_rs(:,(i-1)*samples+1:floor(3*(i*samples-(i-1)*samples)/4)+(i-1)*samples+1);
@@ -80,6 +85,7 @@ for i=1:nC
     YY_test=[YY_test;Y_test{i}];
 
 end
+%% randomly shuffle train and test set
 
 idx1=randperm(size(XX_train,2));
 idx2=randperm(size(XX_test,2));
@@ -90,7 +96,7 @@ LABELS_shuffle_test=YY_test(idx2,:);
 
 
 
-
+%% save data for training and testing
 
 save('savedata_for_training_30ensemble_4classes_fullZ.mat','IMAGE_shuffle_train','LABELS_shuffle_train','IMAGE_shuffle_test','LABELS_shuffle_test','-v7.3');
 csvwrite('training_40ensemble_4classes_fullZ.csv',IMAGE_shuffle_train);
